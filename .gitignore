@@ -1,5 +1,7 @@
 .classpath
+.mule
 .project
 .settings
 catalog/
+reports/
 target/

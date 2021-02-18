@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:mock="http://www.mulesoft.org/schema/mule/mock" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/mock http://www.mulesoft.org/schema/mule/mock/current/mule-mock.xsd">
+    <munit:config name="munit" doc:name="MUnit configuration"/>
+    <spring:beans>
+        <spring:import resource="classpath:muleapp.xml"/>
+        <spring:import resource="classpath:config.xml"/>
+    </spring:beans>
+    <munit:test name="muleapp-test-suite-getAmericanFlightsTest" description="Test">
+		<mock:when messageProcessor=".*:.*" doc:name="Mock Database" metadata:id="d754f6b8-1ed1-4a96-b863-7fe875ae9c81">
+			<mock:with-attributes>
+				<mock:with-attribute name="doc:name" whereValue="#['Database']"/>
+			</mock:with-attributes>
+			<mock:then-return payload="#[[{'code2':'0020', 'planetype':'Boing 777', 'toairport':'SFO', 'takeoffdate':'2015-01-02', 'fromairport':'MUA', 'price':'541', 'airlinename':'Mock', 'seatsavailable':'20', 'code1':'xyz'},{'code2':'0002', 'planetype':'Boing 787', 'toairport':'SFO', 'takeoffdate':'2015-01-02', 'fromairport':'LAX', 'price':'561', 'airlinename':'Mock', 'seatsavailable':'10', 'code1':'abc'}]]"/>
+		</mock:when>
+		<munit:set payload="#[]" doc:name="Set Message">
+			<munit:inbound-properties>
+				<munit:inbound-property key="http.request.uri" value="/american"/>
+				<munit:inbound-property key="http.query.params" value="SFO"/>
+			</munit:inbound-properties>
+		</munit:set>
+        <flow-ref name="getAmericanFlights" doc:name="Flow-ref to getAmericanFlights"/>
+		<munit:assert-true condition="#[payload[0] is com.mulesoft.training.Flight]" doc:name="Assert True"/>
+    </munit:test>
+	<munit:test name="muleapp-test-suite-getUnitedFlightsTest" description="Test">
+		<mock:when messageProcessor=".*:.*" doc:name="Mock HTTP">
+			<mock:with-attributes>
+				<mock:with-attribute name="doc:name" whereValue="#['HTTP']"/>
+			</mock:with-attributes>
+			<mock:then-return payload="[  {    &quot;airlineName&quot;: &quot;Mock&quot;,    &quot;price&quot;: 400,    &quot;departureDate&quot;: &quot;2015/03/20&quot;,    &quot;planeType&quot;: &quot;Boeing 737&quot;,    &quot;origin&quot;: &quot;MUA&quot;,    &quot;code&quot;: &quot;ER38sd&quot;,    &quot;emptySeats&quot;: 0,    &quot;destination&quot;: &quot;SFO&quot;  },  {    &quot;airlineName&quot;: &quot;Mock&quot;,    &quot;price&quot;: 945,    &quot;departureDate&quot;: &quot;2015/09/11&quot;,    &quot;planeType&quot;: &quot;Boeing 757&quot;,    &quot;origin&quot;: &quot;MUA&quot;,    &quot;code&quot;: &quot;ER39rk&quot;,    &quot;emptySeats&quot;: 54,    &quot;destination&quot;: &quot;SFO&quot;  }]" mimeType="application/json"/>
+		</mock:when>
+		<munit:set payload="#[]" doc:name="Set Message">
+			<munit:inbound-properties>
+				<munit:inbound-property key="http.request.uri" value="/united"/>
+				<munit:inbound-property key="http.query.params" value="SFO"/>
+			</munit:inbound-properties>
+		</munit:set>
+		<flow-ref name="getUnitedFlights" doc:name="Flow-ref to getUnitedFlights"/>
+		<munit:assert-true condition="#[payload[0] is com.mulesoft.training.Flight]" doc:name="Assert True"/>
+	</munit:test>
+</mule>
